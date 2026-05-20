@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Solar Tracker Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Solar Tracker Control Panel</h1>
+
+    <div class="grid">
+      <div class="card">
+        <h3>System Status</h3>
+        <p id="system_status">Loading...</p>
+      </div>
+      <div class="card">
+        <h3>Sun Position</h3>
+        <p>Azimuth: <span id="sun_azimuth">--</span>°</p>
+        <p>Elevation: <span id="sun_elevation">--</span>°</p>
+      </div>
+      <div class="card">
+        <h3>Mirror Angles</h3>
+        <p>Azimuth: <span id="mirror_azimuth">--</span>°</p>
+        <p>Elevation: <span id="mirror_elevation">--</span>°</p>
+      </div>
+      <div class="card">
+        <h3>Astronomy Info</h3>
+        <p>Sunrise: <span id="sunrise">--</span></p>
+        <p>Sunset: <span id="sunset">--</span></p>
+        <p>Lat: <span id="latitude">--</span></p>
+        <p>Lon: <span id="longitude">--</span></p>
+      </div>
+    </div>
+    <div class="card actuator-card">
+      <h3>Linear Actuator Control</h3>
+      <div class="actuator-buttons">
+        <button class="btn actuator-up" onclick="moveUp()">Move Up 1 Inch</button>
+        <button class="btn actuator-down" onclick="moveDown()">Move Down 1 Inch</button>
+      </div>
+      <p id="actuator_status" class="actuator-status">Idle</p>
+    </div>
+    <div class="buttons">
+      <button class="btn">Recalibrate Servo</button>
+    </div>
+
+    <p class="update-time">Last updated: <span id="last_updated">--:--:--</span></p>
+  </div>
+  <script>
+    async function updateStatus() {
+      const response = await fetch('/status');
+      const data = await response.json();
+      document.getElementById('system_status').textContent = data.system_status;
+      document.getElementById('sun_azimuth').textContent = Number(data.sun_azimuth).toFixed(2);
+      document.getElementById('sun_elevation').textContent = Number(data.sun_elevation).toFixed(2);
+      document.getElementById('mirror_azimuth').textContent = Number(data.mirror_azimuth).toFixed(2);
+      document.getElementById('mirror_elevation').textContent = Number(data.mirror_elevation).toFixed(2);
+      document.getElementById('sunrise').textContent = data.sunrise;
+      document.getElementById('sunset').textContent = data.sunset;
+      document.getElementById('latitude').textContent = data.latitude;
+      document.getElementById('longitude').textContent = data.longitude;
+      document.getElementById('last_updated').textContent = data.last_updated;
+    }
+    async function moveUp() {
+      document.getElementById("actuator_status").textContent = "Moving Up...";
+      await fetch("/actuator/up");
+      document.getElementById("actuator_status").textContent = "Moved Up 1 Inch";
+    }
+    async function moveDown() {
+      document.getElementById("actuator_status").textContent = "Moving Down...";
+      await fetch("/actuator/down");
+      document.getElementById("actuator_status").textContent = "Moved Down 1 Inch";
+    }
+    setInterval(updateStatus, 5000);
+    updateStatus();
+  </script>
+</body>
+</html>
